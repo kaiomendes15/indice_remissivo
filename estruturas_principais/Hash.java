@@ -1,50 +1,55 @@
-//public class Hash {
-//
-//    public ListaDuplamenteEncadeada<String>[] vetor;
-//    public int nElementos;
-//
-//    public Hash(int capacidade) {
-//        // cast generics
-//        this.vetor = (ListaDuplamenteEncadeada<String>[]) new ListaDuplamenteEncadeada[capacidade];
-//        for (int i = 0; i < vetor.length; i++) {
-//            this.vetor[i] = new ListaDuplamenteEncadeada<String>();
-//        }
-//        this.nElementos = 0;
-//    }
-//
-//    public int tamanho() {
-//        return this.nElementos;
-//    }
-//
-//    public void imprime() {
-//        System.out.println("Chave\tValor");
-//        for (int i = 0; i < vetor.length; i++) {
-//            System.out.print(i + " -->\t");
-//            vetor[i].imprime();
-//        }
-//    }
-//
-//    private int funcaoHashDiv(Integer elemento) {
-//        return elemento % this.vetor.length;
-//    }
-//
-//    public void insere(Integer elemento) {
-//        int endereco = funcaoHashDiv(elemento);
-//        this.vetor[endereco].insereFinal(elemento);
-//        this.nElementos++;
-//    }
-//
-//    public boolean remove(int elemento) {
-//        int endereco = funcaoHashDiv(elemento);
-//        boolean removeu = this.vetor[endereco].removeElemento(elemento);
-//
-//        if(removeu) this.nElementos--;
-//
-//        return removeu;
-//    }
-//
-//    public boolean contem(int elemento) {
-//        int endereco = funcaoHashDiv(elemento);
-//        return this.vetor[endereco].contem(elemento);
-//    }
-//}
+package estruturas_principais;
+
+import estruturas_principais.ListaDuplamenteEncadeada;
+import estruturas_principais.PalavraChave;
+
+public class Hash {
+
+    public ArvoreBinariaBusca<PalavraChave>[] vetor;
+    public int nElementos;
+
+    public Hash(int capacidade) {
+        // cast generics
+        this.vetor = (ArvoreBinariaBusca<PalavraChave>[]) new ArvoreBinariaBusca[capacidade];
+        for (int i = 0; i < vetor.length; i++) {
+            this.vetor[i] = new ArvoreBinariaBusca<PalavraChave>();
+        }
+        this.nElementos = 0;
+    }
+
+    public int tamanho() {
+        return this.nElementos;
+    }
+
+    public void imprime() {
+        for (int i = 0; i < vetor.length; i++) {
+            vetor[i].imprimeEmOrdem();
+        }
+    }
+
+    private int funcaoHashDiv(PalavraChave elemento) {
+        String palavra = elemento.getPalavra();
+        int letraAscii = (int) palavra.charAt(0);
+        return letraAscii - 97;
+    }
+
+    public void insere(PalavraChave elemento) {
+        int endereco = funcaoHashDiv(elemento);
+        this.vetor[endereco].insere(elemento);
+        this.nElementos++;
+    }
+
+    public boolean remove(PalavraChave elemento) {
+        int endereco = funcaoHashDiv(elemento);
+        boolean removeu = this.vetor[endereco].remove(elemento);
+
+        if(removeu) this.nElementos--;
+
+        return removeu;
+    }
+
+    public boolean contem(PalavraChave elemento) {
+        int endereco = funcaoHashDiv(elemento);
+        return this.vetor[endereco].busca(elemento);
+    }
+}

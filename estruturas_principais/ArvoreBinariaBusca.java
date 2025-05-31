@@ -2,15 +2,15 @@ package estruturas_principais;
 
 import estruturas_secundarias.Fila;
 
-public class ArvoreBinariaBusca {
+public class ArvoreBinariaBusca<T extends Comparable<T>> {
 
     class Nodo {
 
-        public int elemento;
+        public T elemento;
         public Nodo esquerdo;
         public Nodo direito;
 
-        public Nodo(int elemento) {
+        public Nodo(T elemento) {
             this.elemento = elemento;
             this.esquerdo = null;
             this.direito = null;
@@ -102,11 +102,11 @@ public class ArvoreBinariaBusca {
         this.emOrdem(nodo.direito);
     }
 
-    public void insere(int elemento) {
+    public void insere(T elemento) {
         this.insere(elemento, this.raiz);
     }
 
-    public void insere(int elemento, Nodo nodo) {
+    public void insere(T elemento, Nodo nodo) {
 
         Nodo novo = new Nodo(elemento);
 
@@ -116,7 +116,7 @@ public class ArvoreBinariaBusca {
             return;
         }
 
-        if (elemento < nodo.elemento) {
+        if (elemento.compareTo(nodo.elemento) < 0) {
             if (nodo.esquerdo == null) {
                 nodo.esquerdo = novo;
                 this.nElementos++;
@@ -126,7 +126,7 @@ public class ArvoreBinariaBusca {
             }
         }
 
-        if (elemento > nodo.elemento) {
+        if (elemento.compareTo(nodo.elemento) > 0) {
             if (nodo.direito == null) {
                 nodo.direito = novo;
                 this.nElementos++;
@@ -151,20 +151,20 @@ public class ArvoreBinariaBusca {
         return nodo;
     }
 
-    public boolean remove(int elemento) {
+    public boolean remove(T elemento) {
         return this.remove(elemento, this.raiz) != null;
     }
 
-    private Nodo remove(int elemento, Nodo nodo) {
+    private Nodo remove(T elemento, Nodo nodo) {
 
         if (nodo == null) {
             System.out.println("Valor não encontrado");
             return null;
         }
 
-        if (elemento < nodo.elemento) {
+        if (elemento.compareTo(nodo.elemento) < 0) {
             nodo.esquerdo = this.remove(elemento, nodo.esquerdo);
-        } else if (elemento > nodo.elemento) {
+        } else if (elemento.compareTo(nodo.elemento) > 0) {
             nodo.direito = this.remove(elemento, nodo.direito);
         } else {
 
@@ -188,20 +188,20 @@ public class ArvoreBinariaBusca {
         return nodo;
     }
 
-    public boolean busca(int elemento) {
+    public boolean busca(T elemento) {
         return this.busca(elemento, this.raiz);
 
     }
 
-    public boolean busca(int elemento, Nodo nodo) {
+    public boolean busca(T elemento, Nodo nodo) {
 
         if (nodo == null) {
             return false;
         }
 
-        if (elemento < nodo.elemento) {
+        if (elemento.compareTo(nodo.elemento) < 0) {
             return this.busca(elemento, nodo.esquerdo);
-        } else if (elemento > nodo.elemento) {
+        } else if (elemento.compareTo(nodo.elemento) > 0) {
             return this.busca(elemento, nodo.direito);
         } else {
             return true;
