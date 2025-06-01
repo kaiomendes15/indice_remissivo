@@ -4,9 +4,9 @@ public class PalavraChave implements Comparable<PalavraChave> {
     private String palavra; // palavra em questao
     private ListaDuplamenteEncadeada<Integer> ocorrencias; // ocorrencias dessa palavra ao longo do arquivo
 
-    public PalavraChave(String palavra, ListaDuplamenteEncadeada<Integer> ocorrencias) {
+    public PalavraChave(String palavra) {
         this.palavra = palavra;
-        this.ocorrencias = ocorrencias;
+        this.ocorrencias = new ListaDuplamenteEncadeada<Integer>(); // inicializa uma lista vazia
     }
 
     public String getPalavra() {
@@ -17,8 +17,13 @@ public class PalavraChave implements Comparable<PalavraChave> {
         this.palavra = palavra;
     }
 
-    public ListaDuplamenteEncadeada<Integer> getOcorrencias() {
-        return ocorrencias;
+    public String getOcorrencias() {
+        String ocorrencias = "";
+        for (int i = 0; i < this.ocorrencias.tamanho(); i++) {
+            ocorrencias += this.ocorrencias.acesse(i) + " ";
+        }
+
+        return ocorrencias.trim();
     }
 
     public void setOcorrencias(ListaDuplamenteEncadeada<Integer> ocorrencias) {

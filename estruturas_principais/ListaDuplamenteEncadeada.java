@@ -259,4 +259,19 @@ public class ListaDuplamenteEncadeada<T extends Comparable<T>> {
         return false;
     }
 
+    public boolean contem(String elemento) {
+        Nodo cursor = this.inicio;
+        for (int i = 0; i < this.nElementos; i++) {
+            if (cursor.elemento instanceof PalavraChave) {
+                PalavraChave pc = (PalavraChave) cursor.elemento;
+                if (pc.getPalavra().equals(elemento)) {
+                    return true;
+                }
+            }
+            cursor = cursor.proximo;
+        }
+        return false;
+    }
+
+
 }
