@@ -102,6 +102,21 @@ public class ArvoreBinariaBusca<T extends Comparable<T>> {
         this.emOrdem(nodo.direito);
     }
 
+    // retorna uma lista ordenada que vai ter sess elementos escritos no arquivo de saida
+    public ListaDuplamenteEncadeada<T> listaEmOrdem() {
+        ListaDuplamenteEncadeada<T> lista = new ListaDuplamenteEncadeada<>();
+        this.listaEmOrdem(this.raiz, lista);
+        return lista;
+    }
+
+    private void listaEmOrdem(Nodo nodo, ListaDuplamenteEncadeada<T> lista) {
+        if (nodo == null) return;
+
+        this.listaEmOrdem(nodo.esquerdo, lista);
+        lista.insereFinal(nodo.elemento);
+        this.listaEmOrdem(nodo.direito, lista);
+    }
+
     public void insere(T elemento) {
         this.insere(elemento, this.raiz);
     }
@@ -205,6 +220,26 @@ public class ArvoreBinariaBusca<T extends Comparable<T>> {
             return this.busca(elemento, nodo.direito);
         } else {
             return true;
+        }
+    }
+
+    public T acessaElemento(T elemento) {
+        return this.acessaElemento(elemento, this.raiz);
+    }
+
+    private T acessaElemento(T elemento, Nodo nodo) {
+        if (nodo == null) {
+            return null; // Elemento não encontrado
+        }
+
+        int comparacao = elemento.compareTo(nodo.elemento);
+
+        if (comparacao < 0) {
+            return this.acessaElemento(elemento, nodo.esquerdo); // Busca na subárvore esquerda
+        } else if (comparacao > 0) {
+            return this.acessaElemento(elemento, nodo.direito); // Busca na subárvore direita
+        } else {
+            return nodo.elemento; // Elemento encontrado, retorna o valor do nó
         }
     }
 

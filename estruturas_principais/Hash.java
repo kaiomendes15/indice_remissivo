@@ -27,6 +27,11 @@ public class Hash {
         }
     }
 
+    public PalavraChave busca(PalavraChave elemento) {
+        int chave = funcaoHashDiv(elemento);
+        return this.vetor[chave].acessaElemento(elemento);
+    }
+
     private int funcaoHashDiv(PalavraChave elemento) {
         String palavra = elemento.getPalavra();
         int letraAscii = (int) palavra.charAt(0);
@@ -37,6 +42,14 @@ public class Hash {
         int endereco = funcaoHashDiv(elemento);
         this.vetor[endereco].insere(elemento);
         this.nElementos++;
+    }
+
+    public ArvoreBinariaBusca<PalavraChave> acesse(int pos) {
+        if (pos < 0 || pos >= this.nElementos) {
+            System.out.println("Posicao invalida");
+            return null;
+        }
+        return this.vetor[pos];
     }
 
     public boolean remove(PalavraChave elemento) {

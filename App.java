@@ -1,3 +1,5 @@
+import estruturas_principais.ArvoreBinariaBusca;
+import estruturas_principais.Hash;
 import estruturas_principais.ListaDuplamenteEncadeada;
 import estruturas_principais.PalavraChave;
 
@@ -8,8 +10,11 @@ import java.util.Scanner;
 public class App {
     public void run() {
         try {
+            // (OK) Ler um arquivo do tipo TXT contendo o texto a
+            //      ser esquadrinhado à procura de palavras que
+            //      pertençam ao índice remissivo;
             Scanner entrada = new Scanner(new File("entrada_saida/entrada.txt"));
-            ListaDuplamenteEncadeada<PalavraChave> palavrasChave = getPalavrasChaves();
+            Hash indiceRemissivo = getPalavrasChaves();
             int numeroLinha = 1;
 
             while(entrada.hasNextLine()) {
@@ -20,18 +25,13 @@ public class App {
                 for (String palavra : palavras) {
                     // normaliza a palavra
                     String palavraNormalizada = normaliza(palavra);
+                    PalavraChave palavraChaveNormalizada = new PalavraChave(palavraNormalizada);
+                    PalavraChave palavraParaAtualizar = indiceRemissivo.busca(palavraChaveNormalizada);
 
-                    if (palavrasChave.contem(palavraNormalizada)) {
+                    if (palavraParaAtualizar != null) {
 
-                        // percorre a lista até achar a PalavraChave correspondente
-                        for (int i = 0; i < palavrasChave.tamanho(); i++) {
-                            PalavraChave pc = palavrasChave.acesse(i);
-                            if (pc.getPalavra().equals(palavraNormalizada)) {
-                                // se a palavra chave for igual a palavra da linha, adiciona o numero da linha na ocorrencia
-                                pc.adicionarOcorrencia(numeroLinha);
-                                break; // já achou, pode sair do loop
-                            }
-                        }
+                        palavraParaAtualizar.adicionarOcorrencia(numeroLinha);
+
                     }
                 }
 
@@ -39,14 +39,20 @@ public class App {
                 numeroLinha++;
             }
             entrada.close();
-            escreveIndiceRemissivo(palavrasChave);
+            escreveIndiceRemissivo(indiceRemissivo);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
     }
 
-    private ListaDuplamenteEncadeada<PalavraChave> getPalavrasChaves() {
-        ListaDuplamenteEncadeada<PalavraChave> palavrasChave = new ListaDuplamenteEncadeada<PalavraChave>();
+    // metodo que armazena as palavras chaves na ABB dentro da HASH
+    // retorna a HASH em questão
+    // (OK) Ler um arquivo do tipo TXT (texto) contendo
+    //      um número arbitrário de palavras-chave que
+    //      deverão constituir o índice remissivo;
+    private Hash getPalavrasChaves() {
+//        ListaDuplamenteEncadeada<PalavraChave> palavrasChave = new ListaDuplamenteEncadeada<PalavraChave>();
+        Hash indiceRemissivo = new Hash(26);
         try {
             Scanner scanner = new Scanner(new File("entrada_saida/palavras_chave"));
             while (scanner.hasNextLine()) {
@@ -57,7 +63,7 @@ public class App {
                     String palavraNormalizada = normaliza(palavra);
 
                     if (!palavraNormalizada.isEmpty()) {
-                        palavrasChave.insereFinal(new PalavraChave(palavraNormalizada));
+                        indiceRemissivo.insere(new PalavraChave(palavraNormalizada));
                     }
 
                 }
@@ -67,29 +73,28 @@ public class App {
             e.printStackTrace();
         }
 
-        return palavrasChave;
+        return indiceRemissivo;
     }
 
-    private void write(String linha) {
-        String caminhoArquivo = "entrada_saida/saida.txt";
-
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(caminhoArquivo, true))) {
-            bw.write(linha);
-            bw.newLine();  // para pular linha
-            System.out.println("Arquivo escrito com sucesso!");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void escreveIndiceRemissivo(ListaDuplamenteEncadeada<PalavraChave> palavrasChave) {
+    private void escreveIndiceRemissivo(Hash palavrasChave) {
         String caminhoArquivo = "entrada_saida/saida.txt";
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(caminhoArquivo))) {
 
-            for (int i = 0; i < palavrasChave.tamanho(); i++) {
-                PalavraChave pc = palavrasChave.acesse(i);
-                bw.write(pc.getPalavra() + " " + pc.getOcorrencias());
-                bw.newLine();
+            // Percorre todas as posições do vetor de árvores
+            for (int i = 0; i < palavrasChave.vetor.length; i++) {
+                ArvoreBinariaBusca<PalavraChave> abb = palavrasChave.vetor[i];
+
+                // Obtém a lista ordenada de palavras
+                ListaDuplamenteEncadeada<PalavraChave> listaPalavras = abb.listaEmOrdem();
+
+                // Escreve cada palavra e suas ocorrências no arquivo
+                for (int j = 0; j < listaPalavras.tamanho(); j++) {
+                    PalavraChave pc = listaPalavras.acesse(j);
+                    if (pc != null) {
+                        bw.write(pc.getPalavra() + ": " + pc.getOcorrencias());
+                        bw.newLine();
+                    }
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
