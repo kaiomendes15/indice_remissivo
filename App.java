@@ -84,13 +84,20 @@ public class App {
             for (int i = 0; i < palavrasChave.vetor.length; i++) {
                 ArvoreBinariaBusca<PalavraChave> abb = palavrasChave.vetor[i];
 
-                // Obtém a lista ordenada de palavras
+                // AQUI TA O PROBLEMA, O PROFESSOR DISSE QUE NAO PRECISAVA ARMAZENAR EM UMA LISTA.
+                // ACHO QUE É SÓ FAZER OUTRO FOR PRA PERCORRER EM ORDEM A ABB E IR ESCREVENDO NA SAIDA
                 ListaDuplamenteEncadeada<PalavraChave> listaPalavras = abb.listaEmOrdem();
 
-                // Escreve cada palavra e suas ocorrências no arquivo
+                // tem que fazer esse for percorrer a abb
+                // provavelmente vai ter que mudar o imprime em ordem para escrever na saida
+                // ArvoreBinariaBusca imprimeEmOrdem() <---
                 for (int j = 0; j < listaPalavras.tamanho(); j++) {
                     PalavraChave pc = listaPalavras.acesse(j);
                     if (pc != null) {
+                        // no imprimeEmOrdem() tu vai substituir o System.out.print por essa parada aq<---
+                        // o pc n vai ser mais pc!
+                        // acho que o pc vai ser um nodo.elemento
+                        // ai tu trocaria: nodo.elemento.getPalavra() + ": " + nodo.elemento.getOcorrencias()
                         bw.write(pc.getPalavra() + ": " + pc.getOcorrencias());
                         bw.newLine();
                     }
