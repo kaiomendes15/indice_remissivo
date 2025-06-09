@@ -2,6 +2,10 @@ package estruturas_principais;
 
 import estruturas_secundarias.Fila;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+
 public class ArvoreBinariaBusca<T extends Comparable<T>> {
 
     class Nodo {
@@ -67,9 +71,8 @@ public class ArvoreBinariaBusca<T extends Comparable<T>> {
         System.out.println();
     }
 
-    public void imprimeEmOrdem() {
-        this.emOrdem(this.raiz);
-        System.out.println();
+    public void imprimeEmOrdem(BufferedWriter bw) throws IOException {
+        this.emOrdem(this.raiz, bw);
     }
 
     public void preOrdem(Nodo nodo) {
@@ -92,14 +95,19 @@ public class ArvoreBinariaBusca<T extends Comparable<T>> {
         System.out.print(nodo.elemento + " ");
     }
 
-    public void emOrdem(Nodo nodo) {
-
-        if (nodo == null)
+    private void emOrdem(Nodo nodo, BufferedWriter bw) throws IOException {
+        if (nodo == null) {
             return;
+        }
 
-        this.emOrdem(nodo.esquerdo);
-        System.out.print(nodo.elemento + " ");
-        this.emOrdem(nodo.direito);
+        this.emOrdem(nodo.esquerdo, bw);
+
+        // Escreve a palavra-chave e suas ocorrências
+        PalavraChave palavra = (PalavraChave) nodo.elemento;
+        bw.write(palavra.getPalavra() + ": " + (palavra.getOcorrencias().isEmpty() ? "Essa palavra não aparece no texto." : palavra.getOcorrencias()));
+        bw.newLine();
+
+        this.emOrdem(nodo.direito, bw);
     }
 
     // retorna uma lista ordenada que vai ter sess elementos escritos no arquivo de saida

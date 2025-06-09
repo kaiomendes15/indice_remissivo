@@ -1,6 +1,5 @@
 import estruturas_principais.ArvoreBinariaBusca;
 import estruturas_principais.Hash;
-import estruturas_principais.ListaDuplamenteEncadeada;
 import estruturas_principais.PalavraChave;
 
 import java.io.*;
@@ -10,32 +9,39 @@ import java.util.Scanner;
 public class App {
     public void run() {
         try {
-            // (OK) Ler um arquivo do tipo TXT contendo o texto a
-            //      ser esquadrinhado à procura de palavras que
-            //      pertençam ao índice remissivo;
             Scanner entrada = new Scanner(new File("entrada_saida/entrada.txt"));
             Hash indiceRemissivo = getPalavrasChaves();
+
             int numeroLinha = 1;
 
             while(entrada.hasNextLine()) {
                 String linha = entrada.nextLine().trim();
-                String[] palavras = linha.split(",\\s*|\\s+");
-                // separa por ", " ou qualquer quantidade de espaços
 
-                for (String palavra : palavras) {
-                    // normaliza a palavra
-                    String palavraNormalizada = normaliza(palavra);
-                    PalavraChave palavraChaveNormalizada = new PalavraChave(palavraNormalizada);
-                    PalavraChave palavraParaAtualizar = indiceRemissivo.busca(palavraChaveNormalizada);
+                // Normaliza a linha inteira
+                String linhaNormalizadaPreliminar = normalizaLinhaCompleta(linha);
+
+                // divide a linha em palavras usando um ou mais espaços como delimitador.
+                // aq as palavras já não tem nenhum caractere fora os que são permitidos
+                String[] palavrasBrutas = linhaNormalizadaPreliminar.split("\\s+");
+
+                for (String palavraBruta : palavrasBrutas) {
+                    // aq limpa individualmente cada palavra, para evitar casos como: palavra--chave, palavra--, --palavra
+                    String palavraProcessada = limpaPalavraParaIndice(palavraBruta);
+
+                    // pula a palavra se for ""
+                    if (palavraProcessada.isEmpty()) {
+                        continue;
+                    }
+
+                    PalavraChave palavraChaveParaBusca = new PalavraChave(palavraProcessada);
+
+                    // busca a palavra na Hash
+                    PalavraChave palavraParaAtualizar = indiceRemissivo.busca(palavraChaveParaBusca);
 
                     if (palavraParaAtualizar != null) {
-
                         palavraParaAtualizar.adicionarOcorrencia(numeroLinha);
-
                     }
                 }
-
-                // incrementar o número da linha
                 numeroLinha++;
             }
             entrada.close();
@@ -45,82 +51,96 @@ public class App {
         }
     }
 
-    // metodo que armazena as palavras chaves na ABB dentro da HASH
-    // retorna a HASH em questão
-    // (OK) Ler um arquivo do tipo TXT (texto) contendo
-    //      um número arbitrário de palavras-chave que
-    //      deverão constituir o índice remissivo;
+    private String normalizaLinhaCompleta(String linha) {
+        if (linha == null) return "";
+
+        String resultado = linha.toLowerCase(); // Converte para minúsculas
+        resultado = Normalizer.normalize(resultado, Normalizer.Form.NFD); // Quebra os acentos (ã -> ~a)
+        resultado = resultado.replaceAll("\\p{InCombiningDiacriticalMarks}+", ""); // Remover acentos e diacríticos da string.
+        resultado = resultado.replaceAll("[^a-z0-9\\s-]", ""); // so aceita letras, numeros e hifen
+        resultado = resultado.replaceAll("\\s+", " ").trim(); // substitui espaços em branco em excesso (2 ou + espaços seguidos) por um único espaço ("   " --> " ")
+
+        return resultado;
+    }
+
+    private String limpaPalavraParaIndice(String palavra) {
+        if (palavra == null || palavra.isEmpty()) {
+            return "";
+        }
+        String resultado = palavra.replaceAll("^[^a-z]+", ""); // remove qualquer caractere que está no inicio da palavra e não é uma letra minuscula
+
+        if (resultado.isEmpty()) { // Se a palavra ficou vazia após remover o início, não é válida.
+            return "";
+        }
+
+        StringBuilder palavraFinal = new StringBuilder(); // so pra tirar a reclamacao do intellij quando eu fazia String palavra += "alguma coisa"
+        boolean lastCharWasHyphen = false; // para evitar hífens consecutivos (ex: "a--b")
+
+        for (int i = 0; i < resultado.length(); i++) {
+            char c = resultado.charAt(i);
+
+            if (c >= 'a' && c <= 'z') { // Caractere é uma letra
+                palavraFinal.append(c);
+                lastCharWasHyphen = false;
+            } else if (c == '-') { // caractere é um hífen
+                // hífen só é permitido se a palavra já tem pelo menos um caractere (não no início)
+                // e o último caractere adicionado não foi outro hífe
+                if (palavraFinal.length() > 0 && !lastCharWasHyphen) {
+                    palavraFinal.append(c);
+                    lastCharWasHyphen = true;
+                }
+            }
+            // outros caracteres (que não são a-z, 0-9, hífen) já foram removidos em normalizaLinhaCompleta.
+        }
+
+        String palavraConstruidaStr = palavraFinal.toString();
+
+        // hífen não pode estar no fim
+        // "palavra-" -> "palavra"
+        palavraConstruidaStr = palavraConstruidaStr.replaceAll("-+$", "");
+
+        // garantir que a palavra não ficou vazia ou que meu primeiro caractere não seja uma letra.
+        if (palavraConstruidaStr.isEmpty() || palavraConstruidaStr.charAt(0) < 'a' || palavraConstruidaStr.charAt(0) > 'z') {
+            return "";
+        }
+
+        return palavraConstruidaStr.trim(); // Retorna a palavra final limpa
+    }
+
     private Hash getPalavrasChaves() {
-//        ListaDuplamenteEncadeada<PalavraChave> palavrasChave = new ListaDuplamenteEncadeada<PalavraChave>();
         Hash indiceRemissivo = new Hash(26);
         try {
-            Scanner scanner = new Scanner(new File("entrada_saida/palavras_chave"));
+            Scanner scanner = new Scanner(new File("entrada_saida/palavras_chave.txt")); // Correção da extensão
             while (scanner.hasNextLine()) {
-                String linha = scanner.nextLine().trim(); // recebe a linha tirando espaços vazios no inicio e fim
-                String[] palavras = linha.split(", "); // armazena as palavras chave
+                String linha = scanner.nextLine().trim();
+                // normaliza e divide a linha das palavras-chave da mesma forma que o texto principal
+                String linhaNormalizadaPreliminar = normalizaLinhaCompleta(linha);
+                String[] palavrasBrutas = linhaNormalizadaPreliminar.split("\\s+");
 
-                for (String palavra : palavras) {
-                    String palavraNormalizada = normaliza(palavra);
+                for (String palavraBruta : palavrasBrutas) {
+                    // limpa cada palavra-chave individualmente
+                    String palavraProcessada = limpaPalavraParaIndice(palavraBruta);
 
-                    if (!palavraNormalizada.isEmpty()) {
-                        indiceRemissivo.insere(new PalavraChave(palavraNormalizada));
+                    if (!palavraProcessada.isEmpty()) {
+                        indiceRemissivo.insere(new PalavraChave(palavraProcessada));
                     }
-
                 }
             }
             scanner.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-
         return indiceRemissivo;
     }
-
     private void escreveIndiceRemissivo(Hash palavrasChave) {
         String caminhoArquivo = "entrada_saida/saida.txt";
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(caminhoArquivo))) {
-
-            // Percorre todas as posições do vetor de árvores
             for (int i = 0; i < palavrasChave.vetor.length; i++) {
                 ArvoreBinariaBusca<PalavraChave> abb = palavrasChave.vetor[i];
-
-                // AQUI TA O PROBLEMA, O PROFESSOR DISSE QUE NAO PRECISAVA ARMAZENAR EM UMA LISTA.
-                // ACHO QUE É SÓ FAZER OUTRO FOR PRA PERCORRER EM ORDEM A ABB E IR ESCREVENDO NA SAIDA
-                ListaDuplamenteEncadeada<PalavraChave> listaPalavras = abb.listaEmOrdem();
-
-                // tem que fazer esse for percorrer a abb
-                // provavelmente vai ter que mudar o imprime em ordem para escrever na saida
-                // ArvoreBinariaBusca imprimeEmOrdem() <---
-                for (int j = 0; j < listaPalavras.tamanho(); j++) {
-                    PalavraChave pc = listaPalavras.acesse(j);
-                    if (pc != null) {
-                        // no imprimeEmOrdem() tu vai substituir o System.out.print por essa parada aq<---
-                        // o pc n vai ser mais pc!
-                        // acho que o pc vai ser um nodo.elemento
-                        // ai tu trocaria: nodo.elemento.getPalavra() + ": " + nodo.elemento.getOcorrencias()
-                        bw.write(pc.getPalavra() + ": " + pc.getOcorrencias());
-                        bw.newLine();
-                    }
-                }
+                abb.imprimeEmOrdem(bw); // Método que percorre a ABB e escreve no BufferedWriter
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private String normaliza(String palavra) {
-        if (palavra == null) return null;
-
-        // 1. Converte para minúsculas
-        String resultado = palavra.toLowerCase();
-
-        // 2. Remove acentos
-        resultado = Normalizer.normalize(resultado, Normalizer.Form.NFD);
-        resultado = resultado.replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
-
-        // 3. Remove tudo que NÃO for letra minúscula ou traço
-        resultado = resultado.replaceAll("[^a-z-]", "");
-
-        return resultado;
     }
 }
